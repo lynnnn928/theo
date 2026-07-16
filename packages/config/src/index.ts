@@ -6,13 +6,18 @@ function requiredEnv(name: string): string {
 
 export const config = {
   llm: {
-    provider: process.env.LLM_PROVIDER || 'openai',
+    provider: process.env.LLM_PROVIDER || 'tokendance',
     apiKey: requiredEnv('LLM_API_KEY'),
-    model: process.env.LLM_MODEL || 'gpt-4o',
+    // TokenDance OpenAI-compatible gateway
+    baseUrl: process.env.LLM_BASE_URL || 'https://tokendance.space/gateway/v1',
+    // 双模型：JD 解析用快模型，报告生成用推理模型
+    modelJd: process.env.LLM_MODEL_JD || 'qwen3-max',
+    modelReport: process.env.LLM_MODEL_REPORT || 'deepseek-v4-pro',
   },
   search: {
-    provider: process.env.SEARCH_PROVIDER || 'tavily',
+    provider: process.env.SEARCH_PROVIDER || 'unifuncs',
     apiKey: requiredEnv('SEARCH_API_KEY'),
+    baseUrl: process.env.SEARCH_BASE_URL || 'https://tokendance.space/gateway/unifuncs',
   },
   database: {
     url: requiredEnv('DATABASE_URL'),
