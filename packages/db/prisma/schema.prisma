@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TaskStatus {
+  queued
+  parsing
+  reasoning
+  outputting
+  completed
+  failed
+}
+
+enum Signal {
+  green
+  yellow
+  red
+}
+
+enum MsgRole {
+  user
+  assistant
+}
+
+enum ProfileLock {
+  unlocked
+  locked
+}
+
+enum UpdateStatus {
+  active
+  confirmed
+  cancelled
+}
+
+model User {
+  id             String            @id @default(uuid())
+  email          String            @unique
+  name           String?
+  avatarUrl      String?           @map("avatar_url")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  tasks          Task[]
+  reports        Report[]
+  followups      FollowupMessage[]
+  profile        Profile?
+  resumes        Resume[]
+  updateSessions UpdateSession[]
+  @@map("users")
+}
+
+model Task {
+  id                 String     @id @default(uuid())
+  user               User       @relation(fields: [userId], references: [id])
+  userId             String     @map("user_id")
+  rawJd              String     @map("raw_jd")
+  recognizedCompany  String?    @map("recognized_company")
+  recognizedPosition String?    @map("recognized_position")
+  status             TaskStatus @default(queued)
+  progress           Int        @default(0)
+  errorMessage       String?    @map("error_message")
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
+  completedAt        DateTime?  @map("completed_at")
+  report             Report?
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status])
+  @@map("tasks")
+}
+
+model Report {
+  id            String            @id @default(uuid())
+  task          Task              @relation(fields: [taskId], references: [id])
+  taskId        String            @unique @map("task_id")
+  user          User              @relation(fields: [userId], references: [id])
+  userId        String            @map("user_id")
+  oneLiner      String            @map("one_liner")
+  overallSignal Signal            @map("overall_signal")
+  quickCard     Json              @map("quick_card")
+  dimensions    Json
+  sources       Json
+  matchResult   Json?             @map("match_result")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  followups     FollowupMessage[]
+  @@index([userId])
+  @@map("reports")
+}
+
+model FollowupMessage {
+  id        String   @id @default(uuid())
+  report    Report   @relation(fields: [reportId], references: [id])
+  reportId  String   @map("report_id")
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  role      MsgRole
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  @@index([reportId, createdAt])
+  @@map("followup_messages")
+}
+
+model Profile {
+  id               String          @id @default(uuid())
+  user             User            @relation(fields: [userId], references: [id])
+  userId           String          @unique @map("user_id")
+  basicInfo        Json            @map("basic_info")
+  focusDirections  String[]        @map("focus_directions")
+  capabilityMap    Json            @map("capability_map")
+  rawMaterials     Json            @map("raw_materials")
+  lockStatus       ProfileLock     @default(unlocked) @map("lock_status")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+  updateSessions   UpdateSession[]
+  @@map("profiles")
+}
+
+model UpdateSession {
+  id          String        @id @default(uuid())
+  user        User          @relation(fields: [userId], references: [id])
+  userId      String        @map("user_id")
+  profile     Profile       @relation(fields: [profileId], references: [id])
+  profileId   String        @map("profile_id")
+  status      UpdateStatus  @default(active)
+  messages    Json
+  createdAt   DateTime      @default(now()) @map("created_at")
+  confirmedAt DateTime?     @map("confirmed_at")
+  @@index([userId, status])
+  @@map("update_sessions")
+}
+
+model Resume {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @map("user_id")
+  fileUrl     String   @map("file_url")
+  parsedText  String   @map("parsed_text")
+  uploadedAt  DateTime @default(now()) @map("uploaded_at")
+  @@map("resumes")
+}

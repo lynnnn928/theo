@@ -1,0 +1,19 @@
+{
+  "name": "@theo/worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@theo/db": "workspace:*",
+    "@theo/analysis": "workspace:*",
+    "@theo/config": "workspace:*",
+    "@theo/types": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.0"
+  }
+}

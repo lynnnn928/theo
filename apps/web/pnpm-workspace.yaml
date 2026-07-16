@@ -1,0 +1,5 @@
+allowBuildPrisma: true
+
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver
