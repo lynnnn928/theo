@@ -1,0 +1,20 @@
+# Theo · 本地/云端部署编排
+# 用法: docker compose up -d worker
+
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    container_name: theo-worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    # 健康检查：Worker 是常驻进程，简单检查进程存活
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

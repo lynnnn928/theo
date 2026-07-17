@@ -7,7 +7,9 @@ config({ path: new URL('../.env', import.meta.url) })
 export default defineConfig({
   datasources: {
     postgresql: {
-      url: process.env.DATABASE_URL!,
+      // 构建时（Docker/CI）可能没有 DATABASE_URL，用占位符避免报错
+      // 运行时由环境变量覆盖
+      url: process.env.DATABASE_URL || 'postgresql://build:build@localhost:5432/build',
     },
   },
 })
