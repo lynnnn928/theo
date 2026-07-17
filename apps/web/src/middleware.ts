@@ -1,7 +1,15 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const PROTECTED = ['/tasks', '/reports', '/profile']
+
 export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname
+
+  // 只对受保护路由做 auth 检查
+  const isProtected = PROTECTED.some((p) => path.startsWith(p))
+  if (!isProtected) return NextResponse.next()
+
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -21,13 +29,9 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh session if expired
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Protect app routes — redirect to login if unauthenticated
-  const protectedPaths = ['/tasks', '/reports', '/profile']
-  const isProtected = protectedPaths.some(p => request.nextUrl.pathname.startsWith(p))
-  if (isProtected && !user) {
+  if (!user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 

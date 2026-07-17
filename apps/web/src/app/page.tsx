@@ -1,8 +1,6 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 
-export default async function Home() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  redirect(user ? '/tasks' : '/login')
+// 首页统一跳转到 /tasks（middleware 会处理未登录的重定向）
+export default function Home() {
+  redirect('/tasks')
 }
